@@ -8,172 +8,249 @@
 
 using namespace std;
 
-//Функция побитового вывода значения переменной
-void printValue(const unsigned int& value)
-{
-    int numByte = sizeof(int) * 4;
-    unsigned  mask = (1 << (numByte - 1));
+//Функция вывода значения по битам
+void printBinary(unsigned int &x) {
+    int n = sizeof(int) * 4;
+    unsigned maska = (1 << (n - 1));
 
-    for (int i = 1; i <= numByte; i++)
-    {
-        cout << ((value & mask) >> (numByte - i));
-        mask >>= 1;
+    for (int i = 1; i <= n; i++) {
+        cout << ((x & maska) >> (n - i));
+        maska >>= 1;
 
         if (i % 4 == 0) { cout << " "; }
     }
 }
 
-//Функция установки битов исходного значения переменной в значение 1 (упр. 1)
-void setBitsToOne(unsigned int& value)
-{
-    value |= 0x0809;
+//Функция устанавливает 0, 3 и 11ый биты переданного значения в 1
+void set1InBits(unsigned int &userValue) {
+    unsigned int maska = 0x0809; // 0000 1000 0000 1001
+    userValue |= maska;
 }
 
-//Функция установки битов исходного значения переменной в значение 0 (упр. 2)
-void setBitsToZero(unsigned int& value)
-{
-    value &= 0x0FFF;
+//Функция устанавливает старшие 4 бита переданного значения в 0
+void set0ToBits(unsigned int &userValue) {
+    unsigned int maska = 0x0FFF; // 0000 1111 1111 1111
+    userValue &= maska;
 }
 
-//Функция умножения значения целочисленной переменной (упр. 3)
-void multiplyValue(unsigned int& value)
-{
-    value <<= 2;
+//Функция умножает значение на 4, используя побитовый сдвиг влево
+void multiply(unsigned int &userValue) {
+    userValue <<= 2;
 }
 
-//Функция деления значения целочисленной переменной (упр. 4)
-void divideValue(unsigned int& value)
-{
-    value >>= 2;
+//Функция делит значение на 4, используя побитовый сдвиг вправо
+void divide(unsigned int &userValue) {
+    userValue >>= 2;
 }
 
-//Функция установки определенных битов значения переменной в 0 (упр. 5)
-void setBitToZero(unsigned int& value, unsigned int numOfBit)
-{
-    unsigned int mask = 0x0010;
+//Функция обнуляет определенные биты переданного значения
+void setZeros(unsigned int &userValue, unsigned int n) {
+    unsigned int maska = 0x0010;
+    unsigned int maskaWith1InEnd = maska >> 4;
+    unsigned int maskaWith1AtNPosition = maskaWith1InEnd << n;
 
-    value &= (~((mask >> 4) << numOfBit));
+    userValue &= ~maskaWith1AtNPosition;
 }
 
-int main(void)
-{
+//Вводная функция к каждому заданию, выбор режима работы
+void onboading(int *arraySize) {
+    cout << "Введите размер массива от 1 до 5000" << endl;
+    cin >> *arraySize;
+
+    cout << "Выберете способ ввода массива:" << endl;
+    cout << "1 - вручную (тестовый прогон)" << endl;
+    cout << "2 - генератор случайных чисел (рабочий прогон)" << endl;
+}
+
+//Функция считывает элементы массива, введённые пользователем
+void readArray(unsigned int *userValues, unsigned int *valuesTest, int arraySize) {
+    for (int i = 0; i < arraySize; i++) {
+        cout << "Введите значение для элемента " << i << " : ";
+        cin >> userValues[i];
+        valuesTest[i] = userValues[i];
+    }
+}
+
+//Функция заполняет массив случайными значениями
+void generateArray(unsigned int *userValues, unsigned int *valuesTest, int arraySize) {
+    for (int i = 0; i < arraySize; i++) {
+        userValues[i] = rand() % 65536;
+        valuesTest[i] = userValues[i];
+    }
+}
+
+int main(void) {
     SetConsoleOutputCP(CP_UTF8);
     srand(time(NULL));
 
-    unsigned int* values;
-    unsigned int* valuesTest;
-    int varietyFlag;
+    int menu = 1;
+    int workMode;
     int arraySize;
-    string temp = "       Было                      Стало      \n";
+    unsigned int *userValues;
+    unsigned int *resultValues;
 
     cout << "Практическая работа №1 'Поразрядные операции и их применение' Школьник Татьяна ИКБО-06-21" << endl;
 
-    cout << "Выберете способ ввода массива:" << endl;
+    while (menu != 0) {
+        cout << "Какое задание выполнить?" << endl;
+        cout << "1. Установить биты в единицу 0й, 3й, 11й" << endl;
+        cout << "2. Установить старшие 4 бита в ноль" << endl;
+        cout << "3. Умножить на 4" << endl;
+        cout << "4. Разделить на 4" << endl;
+        cout << "5. Обнулить разряд" << endl;
 
-    cout << "1 - вручную (тестовый прогон)" << endl;
-    cout << "2 - генератор случайных чисел (рабочий прогон)" << endl;
-    cin >> varietyFlag;
+        cin >> menu;
 
-    cout << "Введите размер массива от 1 до 5000" << endl;
-    cin >> arraySize;
-    values = new unsigned int[arraySize];
-    valuesTest = new unsigned int[arraySize];
+        switch (menu) {
+            case 1:
+                onboading(&arraySize);
+                cin >> workMode;
 
-    if (varietyFlag == 1)
-    {
-        for (int i = 0; i < arraySize; i++)
-        {
-            cout << "Введите значение для элемента под номером " << i << " : ";
-            cin >> values[i];
-            valuesTest[i] = values[i];
+                userValues = new unsigned int[arraySize];
+                resultValues = new unsigned int[arraySize];
+
+                if (workMode == 1) {
+                    readArray(userValues, resultValues, arraySize);
+                } else if (workMode == 2) {
+                    generateArray(userValues, resultValues, arraySize);
+                } else { exit(0); }
+
+                cout << "\nУпражнение " << 1 << "\n" << endl;
+
+                for (int i = 0; i < arraySize; i++) {
+                    cout << "Исходное значение " << endl;
+                    printBinary(userValues[i]);
+
+                    cout << endl << "Изменённое значение " << endl;
+                    set1InBits(resultValues[i]);
+                    printBinary(resultValues[i]);
+                    cout << endl << endl;
+
+                    resultValues[i] = userValues[i];
+                }
+                break;
+            case 2:
+                onboading(&arraySize);
+                cin >> workMode;
+
+                userValues = new unsigned int[arraySize];
+                resultValues = new unsigned int[arraySize];
+
+                if (workMode == 1) {
+                    readArray(userValues, resultValues, arraySize);
+                } else if (workMode == 2) {
+                    generateArray(userValues, resultValues, arraySize);
+                } else { exit(0); }
+
+                cout << "\nУпражнение " << 2 << "\n" << endl;
+
+                for (int i = 0; i < arraySize; i++) {
+                    cout << "Исходное значение " << endl;
+                    printBinary(userValues[i]);
+
+                    cout << endl << "Изменённое значение " << endl;
+                    set0ToBits(resultValues[i]);
+                    printBinary(resultValues[i]);
+                    cout << endl << endl;
+
+                    resultValues[i] = userValues[i];
+                }
+                break;
+            case 3:
+                onboading(&arraySize);
+                cin >> workMode;
+
+                userValues = new unsigned int[arraySize];
+                resultValues = new unsigned int[arraySize];
+
+                if (workMode == 1) {
+                    readArray(userValues, resultValues, arraySize);
+                } else if (workMode == 2) {
+                    generateArray(userValues, resultValues, arraySize);
+                } else { exit(0); }
+
+                cout << "\nУпражнение " << 3 << "\n" << endl;
+
+                for (int i = 0; i < arraySize; i++) {
+                    cout << "Исходное значение " << endl;
+                    printBinary(userValues[i]);
+
+                    cout << endl << "Изменённое значение " << endl;
+                    multiply(resultValues[i]);
+                    printBinary(resultValues[i]);
+                    cout << endl << endl;
+
+                    resultValues[i] = userValues[i];
+                }
+                break;
+            case 4:
+                onboading(&arraySize);
+                cin >> workMode;
+
+                userValues = new unsigned int[arraySize];
+                resultValues = new unsigned int[arraySize];
+
+                if (workMode == 1) {
+                    readArray(userValues, resultValues, arraySize);
+                } else if (workMode == 2) {
+                    generateArray(userValues, resultValues, arraySize);
+                } else { exit(0); }
+
+                cout << "\nУпражнение " << 4 << "\n" << endl;
+
+                for (int i = 0; i < arraySize; i++) {
+                    cout << "Исходное значение " << endl;
+                    printBinary(userValues[i]);
+
+                    cout << endl << "Изменённое значение " << endl;
+                    divide(resultValues[i]);
+                    printBinary(resultValues[i]);
+                    cout << endl << endl;
+
+                    resultValues[i] = userValues[i];
+                }
+                break;
+            case 5:
+                onboading(&arraySize);
+                cin >> workMode;
+
+                userValues = new unsigned int[arraySize];
+                resultValues = new unsigned int[arraySize];
+
+                if (workMode == 1) {
+                    readArray(userValues, resultValues, arraySize);
+                } else if (workMode == 2) {
+                    generateArray(userValues, resultValues, arraySize);
+                } else { exit(0); }
+
+                cout << "\nУпражнение " << 5 << "\n" << endl;
+
+                for (int i = 0; i < arraySize; i++) {
+                    if (workMode == 1) {
+                        int n;
+                        cout << "Введите номер бита (от 0 до 15): ";
+                        cin >> n;
+                        setZeros(resultValues[i], n);
+                    } else {
+                        int n = rand() % 16;
+                        cout << endl << "Обнуляем бит под номером: " << n << endl;
+                        setZeros(resultValues[i], n);
+                    }
+
+                    cout << "Исходное значение " << endl;
+                    printBinary(userValues[i]);
+
+                    cout << endl << "Изменённое значение " << endl;
+                    printBinary(resultValues[i]);
+
+                    cout << endl << endl;
+
+                    resultValues[i] = userValues[i];
+                }
         }
+        break;
+
     }
-    else if (varietyFlag == 2)
-    {
-        for (int i = 0; i < arraySize; i++)
-        {
-            values[i] = rand() % 65536;
-            valuesTest[i] = values[i];
-        }
-    }
-    else { exit(0); }
-
-    cout << "\nУпражнение 1\n" << endl;
-    cout << temp;
-    for (int i = 0; i < arraySize; i++)
-    {
-        printValue(values[i]); cout << "      ";
-
-        setBitsToOne(valuesTest[i]);
-        printValue(valuesTest[i]); cout << endl;
-
-        valuesTest[i] = values[i];
-    }
-
-    cout << "\nУпражнение 2\n" << endl;
-    cout << temp;
-    for (int i = 0; i < arraySize; i++)
-    {
-        printValue(values[i]); cout << "      ";
-
-        setBitsToZero(valuesTest[i]);
-        printValue(valuesTest[i]); cout << endl;
-
-        valuesTest[i] = values[i];
-    }
-
-    cout << "\nУпражнение 3\n" << endl;
-    cout << temp;
-    for (int i = 0; i < arraySize; i++)
-    {
-        printValue(values[i]); cout << "      ";
-
-        multiplyValue(valuesTest[i]);
-        printValue(valuesTest[i]);
-
-        valuesTest[i] = values[i]; cout << endl;
-    }
-
-    cout << "\nУпражнение 4\n" << endl;
-    cout << temp;
-    for (int i = 0; i < arraySize; i++)
-    {
-        printValue(values[i]); cout << "      ";
-
-        divideValue(valuesTest[i]);
-        printValue(valuesTest[i]); cout << endl;
-
-        valuesTest[i] = values[i];
-    }
-
-    cout << "\nУпражнение 5\n" << endl;
-    if (varietyFlag == 2)
-    {
-        cout << temp;
-    }
-    for (int i = 0; i < arraySize; i++)
-    {
-        if (varietyFlag == 1)
-        {
-            int numBit;
-
-            cout << "Введите номер бита (от 0 до 15): ";
-            cin >> numBit;
-            cout << temp;
-
-            setBitToZero(valuesTest[i], numBit);
-        }
-        else
-        {
-            setBitToZero(valuesTest[i], rand() % 16);
-        }
-
-        printValue(values[i]); cout << "      ";
-
-        printValue(valuesTest[i]); cout << endl;
-
-        valuesTest[i] = values[i];
-    }
-
-    system("pause"); return 0;
+    system("pause");
+    return 0;
 }
